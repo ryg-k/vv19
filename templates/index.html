@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+<br />
+Hello {{ name }}
+
+<br />
+
+
+<form method="POST" action="/confirm" enctype="multipart/form-data">
+  画像選択<input type="file" id="img_data1" name="img_data1">
+  <br />
+  <input type="submit" value="送信">
+  <p>嫌いな食べ物
+  <select name="hate">
+    <option value="1">ピーマン</option>
+    <option value="2">パクチー</option>
+    <option value="3">わさび</option>
+  </select>
+</p>
+</form>
+
+{% if images %}
+  {% for path in images %}
+    <div>
+    <img src="static/img_make/{{ path }}" alt="Image">
+    {{ path }}
+    {% for igli in iglis %}
+      {% if path == igli[0] %}
+        <table border="1">
+          <tr>
+            {% for ig in igli %}
+            <td>{{ ig }}</td>
+            {% endfor %}
+          </tr>
+        </table>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endfor %}
+{% endif %}
+
+{% endblock %}
