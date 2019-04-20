@@ -9,7 +9,12 @@ import time
 
 app = Flask(__name__)
 
-
+if not os.path.exists("uploads/"):
+    os.makedirs("uploads/")
+if not os.path.exists("static/images/"):
+    os.makedirs("static/images/")
+if not os.path.exists("static/img_make/"):
+    os.makedirs("static/img_make/")
 
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = set(['jpg','png','gif'])
