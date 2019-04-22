@@ -22,7 +22,7 @@ Hello {{ name }}
 {% if images %}
   {% for path in images %}
     <div>
-    <img src="static/img_make/{{ path }}" alt="Image">
+    <img src="static/img_make/{{ path }}" alt="Image",width="300" height="200">
     {{ path }}
     {% for igli in iglis %}
       {% if path == igli[0] %}
