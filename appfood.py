@@ -1,11 +1,9 @@
 from flask import Flask,render_template, flash, request, redirect, url_for, send_from_directory
-import urllib
-import numpy as np
 from PIL import Image, ImageDraw, ImageOps
 import os
 from werkzeug import secure_filename
-import subprocess
-import time
+import datetime
+
 
 app = Flask(__name__)
 
@@ -17,7 +15,7 @@ if not os.path.exists("static/img_make/"):
     os.makedirs("static/img_make/")
 
 UPLOAD_FOLDER = './uploads'
-ALLOWED_EXTENSIONS = set(['jpg','png','gif','JPG'])
+ALLOWED_EXTENSIONS = set(['jpg','png','gif'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = os.urandom(24)
 
@@ -35,7 +33,11 @@ SAVE_DIR="./static/img_make"
 def index():
     name="yokoyama"
     iglis=iglists
-    return render_template('index.html',title="FOOD",name=name,images=os.listdir(SAVE_DIR)[::-1],iglis=iglis)
+    a=os.listdir(SAVE_DIR)[::-1]
+    print(a)
+    a2=sorted(a,reverse=True)
+    print(a2)
+    return render_template('index.html',title="FOOD",name=name,images=a2,iglis=iglis)
 
 """
 @app.route('/confirm',methods=['POST'])
@@ -68,15 +70,18 @@ def save_img():
             img=Image.open(MAIN_FILENAME)
             width,height=img.size
             img2=ImageOps.invert(img)
-            if os.path.exists(os.path.join('static', 'img_make',filename)):
-                os.remove(os.path.join('static', 'img_make',filename))
-            img2.save(os.path.join('static', 'img_make',filename))
-            img_url = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            img_url22=os.path.join('static', 'img_make',filename)
+            now=datetime.datetime.now()
+            fmt_name = "pic_{0:%Y%m%d-%H%M%S}.jpg".format(now)
+
+            if os.path.exists(os.path.join('static', 'img_make',fmt_name)):
+                os.remove(os.path.join('static', 'img_make',fmt_name))
+            img2.save(os.path.join('static', 'img_make',fmt_name))
+            img_url = os.path.join(app.config['UPLOAD_FOLDER'], fmt_name)
+            img_url22=os.path.join('static', 'img_make',fmt_name)
             print(img_url)
             print(img_url22)
             #ここで栄養を計算してリストでもっておく
-            iglists.append([filename,"タンパク質","ビタミン","鉄分"])
+            iglists.append([fmt_name,"タンパク質","ビタミン","鉄分"])
             return redirect('/')
 
 
