@@ -281,9 +281,9 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
 
     prediction = "predictions"
-    dirTrain = "/home/meip-users/Desktop/yici/internship/internship in Chula: Yici Chen/cnn/dataset/train/train"
-    dirVal = "/home/meip-users/Desktop/yici/internship/internship in Chula: Yici Chen/cnn/dataset/train/val"
-    dirTest="/home/meip-users/Desktop/yici/internship/internship in Chula: Yici Chen/cnn/dataset/test"		
+    dirTrain = "/home/virtual_net/dataset/train/train"
+    dirVal = "/home/virtual_net/dataset/train/val"
+    dirTest="/home/virtual_net/dataset/test"		
     # create_dataset(dirTrain, dirVal, dirTest)
     data_train, data_val, data_test, labels_train, labels_val, labels_test, num_classes, labels = load_data()
 

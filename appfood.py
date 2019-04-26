@@ -17,7 +17,7 @@ if not os.path.exists("static/img_make/"):
     os.makedirs("static/img_make/")
 
 UPLOAD_FOLDER = './uploads'
-ALLOWED_EXTENSIONS = set(['jpg','png','gif'])
+ALLOWED_EXTENSIONS = set(['jpg','png','gif','JPG'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = os.urandom(24)
 
