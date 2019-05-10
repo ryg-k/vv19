@@ -33,6 +33,7 @@ def image_transform(image):
     img = io.imread(image)
     img = preprocess_input(img)
     img = img / 255.0
+    img_size = 50
     img = transform.resize(img, (img_size, img_size, 3), mode='constant')
     return img
 
