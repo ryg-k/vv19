@@ -88,7 +88,7 @@ def load_data():
 
     with open("label.csv","w") as f:
         writer=csv.writer(f,lineterminator="\n")
-        writer.writerows(list)
+        writer.writerows(lables)
 
 if __name__ == "__main__":
     load_data()
