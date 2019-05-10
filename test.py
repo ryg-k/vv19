@@ -125,56 +125,6 @@ def predict(data_test, labels):
 
         cv2.imwrite(img_name, img)
 
-<<<<<<< HEAD
-=======
-
-# Loads the dataset into arrays
-def load_data():
-    print("loading data")
-    train_data = []
-    val_data = []
-    test_data = []
-    train_labels = []
-    val_labels = []
-    test_labels = []
-    labels = []
-    classes = 0
-
-    for folder in os.listdir(dirTrain):
-        img_path = dirTrain + "/" + folder
-        labels.append(os.path.basename(folder))
-        classes += 1
-
-        for image in os.listdir(img_path):
-            img = image_transform(img_path + "/" + image)
-            train_labels.append(classes - 1)
-            train_data.append(img)
-    
-    classes = 0
-    for folder in os.listdir(dirVal):
-        img_path = dirTrain + "/" + folder
-        labels.append(os.path.basename(folder))
-        classes += 1
-
-        for image in os.listdir(img_path):
-            img = image_transform(img_path + "/" + image)
-            val_labels.append(classes - 1)
-            val_data.append(img) 
-
-    index = 0
-    for folder in os.listdir(dirTest):
-        img_path = dirTest + "/" + folder
-        index += 1
-
-        for image in os.listdir(img_path):
-            img = image_transform(img_path + "/" + image)
-            test_labels.append(index - 1)
-            test_data.append(img)
-    
-    np.savez('transformed_data.npz',train_d=np.array(train_data),val_d=np.array(val_data), test_d=np.array(test_data), train_l=np.array(train_labels), val_l=np.array(val_labels), test_l=np.array(test_labels))
-
-
->>>>>>> e818642efb4111dff6c5443034dde2cee6b19ee9
 def print_cmx(y_true,y_pred):
     labels=sorted(list(set(y_true)))
     cmx_data=confusion_matrix(y_true,y_pred,labels=labels)
@@ -199,12 +149,12 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
 
     prediction = "predictions"
-    dirTrain = "/home/virtual_net/dataset/train/train"
-    dirVal = "/home/virtual_net/dataset/train/val"
-    dirTest="/home/virtual_net/dataset/test"
-    transformed="/home/virtual_net/vv19/npzfile"		
+    dirTrain = "/home/virtual_net/dataset2/train/train"
+    dirVal = "/home/virtual_net/dataset2/train/val"
+    dirTest="/home/virtual_net/dataset2/test"
+    transformed="/home/virtual_net/vv19/npzfile2"		
     
-    npzfile=np.load("transformed_data.npz")
+    npzfile=np.load("transformed_data2.npz")
     data_train=npzfile['train_d']
     data_val=npzfile['val_d']
     data_test=npzfile['test_d']
@@ -214,7 +164,7 @@ if __name__ == "__main__":
     num_classes=5
     
     labels=[]
-    with open("lable.csv","r") as f:
+    with open("label2.csv","r") as f:
         reader=csv.reader(f)
         header=next(reader)
     for row in reader:
