@@ -22,9 +22,11 @@ from keras.applications.vgg19 import VGG19, preprocess_input
 from sklearn.metrics import confusion_matrix
 import pandas as pd
 import seaborn as sn
+import csv
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 
 # CNN model structure
@@ -136,7 +138,6 @@ def image_transform(image):
     img = preprocess_input(img)
     img = img / 255.0
     img = transform.resize(img, (img_size, img_size, 3), mode='constant')
-
     return img
 
 
@@ -197,7 +198,6 @@ def predict(data_test, labels):
                     color=(255, 255, 255),
                     lineType=2)
 
-        #only 4 categories are used in testing
         cv2.putText(img, labels[top[4]] + ": " + str(predictions[top[4]]),
                     org=(5, 75),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
@@ -254,8 +254,9 @@ def load_data():
             img = image_transform(img_path + "/" + image)
             test_labels.append(index - 1)
             test_data.append(img)
+    
+    np.savez('transformed_data.npz',train_d=np.array(train_data),val_d=np.array(val_data), test_d=np.array(test_data), train_l=np.array(train_labels), val_l=np.array(val_labels), test_l=np.array(test_labels))
 
-    return np.array(train_data), np.array(val_data), np.array(test_data), np.array(train_labels), np.array(val_labels), np.array(test_labels), classes, labels
 
 def print_cmx(y_true,y_pred):
     labels=sorted(list(set(y_true)))
@@ -283,9 +284,23 @@ if __name__ == "__main__":
     prediction = "predictions"
     dirTrain = "/home/virtual_net/dataset/train/train"
     dirVal = "/home/virtual_net/dataset/train/val"
-    dirTest="/home/virtual_net/dataset/test"		
+    dirTest="/home/virtual_net/dataset/test"
+    transformed="/home/virtual_net/vv19/npzfile"		
     # create_dataset(dirTrain, dirVal, dirTest)
-    data_train, data_val, data_test, labels_train, labels_val, labels_test, num_classes, labels = load_data()
+    npzfile=np.load("transformed_data.npz")
+    data_train=npzfile['train_d']
+    data_val=npzfile['val_d']
+    data_test=npzfile['test_d']
+    labels_train=npzfile['train_l']
+    labels_val=npzfile['val_l']
+    labels_test=npzfile['test_l']
+    num_classes=101
+    
+    with open("lable.csv","r") as f:
+        reader=csv.reader(f)
+        header=next(reader)
+    for row in reader:
+        labels.append(row)
 
     encoder = LabelBinarizer()
     transformed_labels_train = encoder.fit_transform(labels_train)
