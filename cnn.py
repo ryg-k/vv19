@@ -22,9 +22,11 @@ from keras.applications.vgg19 import VGG19, preprocess_input
 from sklearn.metrics import confusion_matrix
 import pandas as pd
 import seaborn as sn
+import csv
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 
 # CNN model structure
@@ -52,93 +54,6 @@ def cnn(classes):
 
     print("done")
     return model
-
-# Generates images similar to the ones in dataset so there is more training/testing data
-def create_dataset(dirTrain, dirVal, dirTest):
-    print("creating dataset")
-    datagen = ImageDataGenerator(
-        rotation_range=30,
-        width_shift_range=0.05,
-        height_shift_range=0.05,
-        shear_range=0.0,
-        zoom_range=0.2,
-        horizontal_flip=True,
-        fill_mode='nearest')
-
-    for folder in os.listdir(dirTrain):
-
-        if len([name for name in os.listdir(dirTrain+folder) if os.path.isfile(os.path.join(dirTrain+folder, name))]) >= 15:
-            max_i = 25
-        else:
-            max_i = 40
-
-        for image in os.listdir(dirTrain + folder):
-
-            img = dirTrain + folder + image
-            img = load_img(img)
-            x = img_to_array(img)
-            x = x.reshape((1,) + x.shape)
-            i = 0
-
-            for _ in datagen.flow(x, batch_size=1, save_to_dir=(dirTrain + folder), save_prefix='gen',
-                                  save_format='jpg'):
-                i += 1
-                if i > max_i:
-                    break
-
-    for folder in os.listdir(dirVal):
-
-        if len([name for name in os.listdir(dirVal+folder) if os.path.isfile(os.path.join(dirVal+folder, name))]) >= 15:
-            max_i = 25
-        else:
-            max_i = 40
-
-        for image in os.listdir(dirVal + folder):
-
-            img = dirVal + folder + image
-            img = load_img(img)
-            x = img_to_array(img)
-            x = x.reshape((1,) + x.shape)
-            i = 0
-
-            for _ in datagen.flow(x, batch_size=1, save_to_dir=(dirVal + folder), save_prefix='gen',
-                                  save_format='jpg'):
-                i += 1
-                if i > max_i:
-                    break
-
-    for folder in os.listdir(dirTest):
-
-        if len([name for name in os.listdir(dirTest+folder) if os.path.isfile(os.path.join(dirTest+folder, name))]) >= 5:
-            max_i = 25
-        else:
-            max_i = 40
-
-        for image in os.listdir(dirTest + folder):
-
-            img = dirTest + folder + image
-            img = load_img(img)
-            x = img_to_array(img)
-            x = x.reshape((1,) + x.shape)
-            i = 0
-
-            for _ in datagen.flow(x, batch_size=1, save_to_dir=(dirTest + folder), save_prefix='gen',
-                                  save_format='jpg'):
-                i += 1
-                if i > max_i:
-                    break
-
-
-# Reads the image, normalizes it and scales it down to input it into cnn
-def image_transform(image):
-    print("transforming image")
-    img = io.imread(image)
-    img = preprocess_input(img)
-    img = img / 255.0
-    img = transform.resize(img, (img_size, img_size, 3), mode='constant')
-
-    return img
-
 
 # Function for predicting images from test folder (saves images with top 5 labels)
 def predict(data_test, labels):
@@ -197,7 +112,6 @@ def predict(data_test, labels):
                     color=(255, 255, 255),
                     lineType=2)
 
-        #only 4 categories are used in testing
         cv2.putText(img, labels[top[4]] + ": " + str(predictions[top[4]]),
                     org=(5, 75),
                     fontFace=cv2.FONT_HERSHEY_SIMPLEX,
@@ -210,52 +124,6 @@ def predict(data_test, labels):
         img_name = prediction + imgnames[i-1] +"/"+ str(i) + ".jpg"
 
         cv2.imwrite(img_name, img)
-
-
-# Loads the dataset into arrays
-def load_data():
-    print("loading data")
-    train_data = []
-    val_data = []
-    test_data = []
-    train_labels = []
-    val_labels = []
-    test_labels = []
-    labels = []
-    classes = 0
-
-    for folder in os.listdir(dirTrain):
-        img_path = dirTrain + "/" + folder
-        labels.append(os.path.basename(folder))
-        classes += 1
-
-        for image in os.listdir(img_path):
-            img = image_transform(img_path + "/" + image)
-            train_labels.append(classes - 1)
-            train_data.append(img)
-    
-    classes = 0
-    for folder in os.listdir(dirVal):
-        img_path = dirTrain + "/" + folder
-        labels.append(os.path.basename(folder))
-        classes += 1
-
-        for image in os.listdir(img_path):
-            img = image_transform(img_path + "/" + image)
-            val_labels.append(classes - 1)
-            val_data.append(img) 
-
-    index = 0
-    for folder in os.listdir(dirTest):
-        img_path = dirTest + "/" + folder
-        index += 1
-
-        for image in os.listdir(img_path):
-            img = image_transform(img_path + "/" + image)
-            test_labels.append(index - 1)
-            test_data.append(img)
-
-    return np.array(train_data), np.array(val_data), np.array(test_data), np.array(train_labels), np.array(val_labels), np.array(test_labels), classes, labels
 
 def print_cmx(y_true,y_pred):
     labels=sorted(list(set(y_true)))
@@ -283,9 +151,24 @@ if __name__ == "__main__":
     prediction = "predictions"
     dirTrain = "/home/virtual_net/dataset/train/train"
     dirVal = "/home/virtual_net/dataset/train/val"
-    dirTest="/home/virtual_net/dataset/test"		
-    # create_dataset(dirTrain, dirVal, dirTest)
-    data_train, data_val, data_test, labels_train, labels_val, labels_test, num_classes, labels = load_data()
+    dirTest="/home/virtual_net/dataset/test"
+    transformed="/home/virtual_net/vv19/npzfile"		
+    
+    npzfile=np.load("transformed_data.npz")
+    data_train=npzfile['train_d']
+    data_val=npzfile['val_d']
+    data_test=npzfile['test_d']
+    labels_train=npzfile['train_l']
+    labels_val=npzfile['val_l']
+    labels_test=npzfile['test_l']
+    num_classes=101
+    
+    labels=[]
+    with open("lable.csv","r") as f:
+        reader=csv.reader(f)
+        header=next(reader)
+    for row in reader:
+        labels.append(row)
 
     encoder = LabelBinarizer()
     transformed_labels_train = encoder.fit_transform(labels_train)
