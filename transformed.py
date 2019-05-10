@@ -48,6 +48,10 @@ def load_data():
     labels = []
     classes = 0
 
+    dirTrain = "/home/virtual_net/dataset/train/train"
+    dirVal = "/home/virtual_net/dataset/train/val"
+    dirTest="/home/virtual_net/dataset/test"
+    
     for folder in os.listdir(dirTrain):
         img_path = dirTrain + "/" + folder
         labels.append(os.path.basename(folder))
