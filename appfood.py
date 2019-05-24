@@ -3,16 +3,25 @@ from PIL import Image, ImageDraw, ImageOps
 import os
 from werkzeug import secure_filename
 import datetime
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+import matplotlib
 
+font_path = '/usr/share/fonts/truetype/takao-gothic/TakaoPGothic.ttf'
+font_prop = FontProperties(fname=font_path)
+matplotlib.rcParams['font.family'] = font_prop.get_name()
 
 app = Flask(__name__)
 
 if not os.path.exists("uploads/"):
     os.makedirs("uploads/")
-if not os.path.exists("static/images/"):
-    os.makedirs("static/images/")
+if not os.path.exists("static/graph/"):
+    os.makedirs("static/graph/")
 if not os.path.exists("static/img_make/"):
     os.makedirs("static/img_make/")
+if os.path.exists("static/graph/radar.png"):
+    os.remove("static/graph/radar.png")
 
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = set(['jpg','png','gif'])
@@ -27,9 +36,20 @@ def long_load(typeback):
     time.sleep(5)
     return "You typed: %s" % typeback
 
+def plot_polar(labels, values, imgname):
+    angles = np.linspace(0, 2 * np.pi, len(labels) + 1, endpoint=True)
+    values = np.concatenate((values, [values[0]]))  # 閉じた多角形にする
+    fig = plt.figure()
+    ax = fig.add_subplot(111, polar=True)
+    ax.plot(angles, values, 'o-')  # 外枠
+    ax.fill(angles, values, alpha=0.25)  # 塗りつぶし
+    ax.set_thetagrids(angles[:-1] * 180 / np.pi, labels)  # 軸ラベル
+    ax.set_rlim(0 ,250)
+    fig.savefig(imgname)
+    plt.close(fig)
+
 iglists=[]
 SAVE_DIR="./static/img_make"
-# 初期画面、img_makeに画像があれば表示
 @app.route('/')
 def index():
     name="yokoyama"
@@ -38,10 +58,13 @@ def index():
     print(a)
     a2=sorted(a,reverse=True)
     print(a2)
-    return render_template('index.html',title="FOOD",name=name,images=a2,iglis=iglis)
+    graph_url=""
+    if os.path.exists("static/graph/radar.png"):
+        graph_url="static/graph/radar.png"
+    print(graph_url)
+    return render_template('index.html',title="FOOD",name=name,images=a2,iglis=iglis,graph_url=graph_url)
 
 """
-# long_load
 @app.route('/confirm',methods=['POST'])
 def form(display=None):
     query=request.files['img_data1']
@@ -51,34 +74,29 @@ def form(display=None):
 @app.route('/confirm', methods = ['POST', 'GET'])
 def save_img():
     if request.method == 'POST':
-        # ここでは、保存するだけ!
+        #ここでは、保存するだけ!
         #1
         if 'img_data1' not in request.files:
             flash('No file part')
             return redirect(request.url)
-        img_data1=request.files['img_data1'] # 画像ファイルを取ってくる
-        hate=request.form["hate"] # 嫌いなものを取り出す
-        # 画像ファイルかどうか判定
+        img_data1=request.files['img_data1']
+        hate=request.form["hate"]
+        #画像ファイルかどうか判定
+        #１つめだけ判定することにした
         if img_data1 and allowed_file(img_data1.filename):
-            print("kkkkkkkkkkkkkkkkkkkkkkkk")
             filename = secure_filename(img_data1.filename)
             basedir = os.path.abspath(os.path.dirname(__file__))
-            # uploadに一旦保存する（必要あるかわからないが）
+            #一旦保存する（必要あるかわからないが）
             img_data1.save(os.path.join(basedir,app.config['UPLOAD_FOLDER'], filename))
             MAIN_FILENAME = './uploads/' + filename
             #print(img_file)
-            # 保存した画像読み込み
+            #画像読み込み
             img=Image.open(MAIN_FILENAME)
             width,height=img.size
-
-            # 色反転(テスト用)
             img2=ImageOps.invert(img)
-
             now=datetime.datetime.now()
             fmt_name = "pic_{0:%Y%m%d-%H%M%S}.jpg".format(now)
 
-            # 編集した画像を保存
-            # 作った画像はimg_makeに保存
             if os.path.exists(os.path.join('static', 'img_make',fmt_name)):
                 os.remove(os.path.join('static', 'img_make',fmt_name))
             img2.save(os.path.join('static', 'img_make',fmt_name))
@@ -86,10 +104,12 @@ def save_img():
             img_url22=os.path.join('static', 'img_make',fmt_name)
             print(img_url)
             print(img_url22)
-            # ここで栄養を計算してリストでもっておく
+            #ここで栄養を計算してリストでもっておく
             iglists.append([fmt_name,"タンパク質","ビタミン","鉄分"])
-            # [filename,123,1,34]をグラフにする
-            return redirect('/')  # /に戻る
+            labels = ["タンパク質","ビタミン","鉄分","ビタミンB12"]
+            values = [155, 156, 188, 139]
+            plot_polar(labels, values, os.path.join('static', 'graph',"radar.png"))
+            return redirect('/')
 
 
 
