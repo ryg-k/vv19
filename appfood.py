@@ -7,6 +7,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib
+import cv2
+from keras.models import model_from_json, Sequential
+from skimage import io, transform
 
 font_path = '/usr/share/fonts/truetype/takao-gothic/TakaoPGothic.ttf'
 font_prop = FontProperties(fname=font_path)
@@ -47,6 +50,34 @@ def plot_polar(labels, values, imgname):
     ax.set_rlim(0 ,250)
     fig.savefig(imgname)
     plt.close(fig)
+
+def pred_image(img1):
+    img = cv2.imread(img1, flags=cv2.IMREAD_UNCHANGED)
+    json_file = open("ave.json", 'r')
+    model_json=json_file.read()
+    json_file.close()
+    model = model_from_json(model_json)
+    model.load_weights("weightsrm.hdf5")
+    img = img / 255.0
+    img_size = 50
+    img = transform.resize(img, (img_size, img_size, 3), mode='constant')
+    image = np.expand_dims(img, axis=0)
+    predictions = model.predict(image)
+    #predictionが予測したもの。
+
+    labelslist=[]
+    f=open("labels.txt")
+    line=f.readline()
+    labelslist.append(line.replace("\n",""))
+    while line:
+        line=f.readline()
+        labelslist.append(line.replace("\n",""))
+    top5=np.array(predictions[0]).argsort()[-5:][::-1]
+    print(top5)
+    for t in top5:
+        print(labelslist[t])
+        print(predictions[0][t])
+    return labelslist[top5[0]]
 
 iglists=[]
 SAVE_DIR="./static/img_make"
