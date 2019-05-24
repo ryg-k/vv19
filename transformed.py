@@ -17,8 +17,6 @@ from sklearn.preprocessing import LabelBinarizer
 import argparse
 import cv2
 import matplotlib.pyplot as plt
-from tqdm import tqdm
-
 from keras.models import Model
 from keras.applications.vgg19 import VGG19, preprocess_input
 from sklearn.metrics import confusion_matrix
@@ -94,4 +92,3 @@ def load_data():
 
 if __name__ == "__main__":
     load_data()
-
