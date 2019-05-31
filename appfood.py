@@ -7,13 +7,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib
+import pandas as pd
 import cv2
 from keras.models import model_from_json, Sequential
 from skimage import io, transform
 
-font_path = '/usr/share/fonts/truetype/takao-gothic/TakaoPGothic.ttf'
-font_prop = FontProperties(fname=font_path)
-matplotlib.rcParams['font.family'] = font_prop.get_name()
+# font_path = '/usr/share/fonts/truetype/takao-gothic/TakaoPGothic.ttf'
+# font_prop = FontProperties(fname=font_path)
+# matplotlib.rcParams['font.family'] = font_prop.get_name()
 
 app = Flask(__name__)
 
@@ -66,18 +67,23 @@ def pred_image(img1):
     #predictionが予測したもの。
 
     labelslist=[]
-    f=open("labels.txt")
-    line=f.readline()
-    labelslist.append(line.replace("\n",""))
-    while line:
-        line=f.readline()
-        labelslist.append(line.replace("\n",""))
+    with open("labels.txt") as f:
+        while line:
+            line=f.readline()
+            labelslist.append(line.replace("\n",""))
     top5=np.array(predictions[0]).argsort()[-5:][::-1]
     print(top5)
     for t in top5:
         print(labelslist[t])
         print(predictions[0][t])
     return labelslist[top5[0]]
+
+
+def extract_nutrient_data(meal_name):
+    nutrient_csv = "foodlist_to_nutrient.csv"
+    nutrient_data = pd.read_csv(nutrient_csv)
+    return nutrient_data['name' == meal_name]
+
 
 iglists=[]
 SAVE_DIR="./static/img_make"
