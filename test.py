@@ -55,92 +55,6 @@ def cnn(classes):
     print("done")
     return model
 
-# Generates images similar to the ones in dataset so there is more training/testing data
-def create_dataset(dirTrain, dirVal, dirTest):
-    print("creating dataset")
-    datagen = ImageDataGenerator(
-        rotation_range=30,
-        width_shift_range=0.05,
-        height_shift_range=0.05,
-        shear_range=0.0,
-        zoom_range=0.2,
-        horizontal_flip=True,
-        fill_mode='nearest')
-
-    for folder in os.listdir(dirTrain):
-
-        if len([name for name in os.listdir(dirTrain+folder) if os.path.isfile(os.path.join(dirTrain+folder, name))]) >= 15:
-            max_i = 25
-        else:
-            max_i = 40
-
-        for image in os.listdir(dirTrain + folder):
-
-            img = dirTrain + folder + image
-            img = load_img(img)
-            x = img_to_array(img)
-            x = x.reshape((1,) + x.shape)
-            i = 0
-
-            for _ in datagen.flow(x, batch_size=1, save_to_dir=(dirTrain + folder), save_prefix='gen',
-                                  save_format='jpg'):
-                i += 1
-                if i > max_i:
-                    break
-
-    for folder in os.listdir(dirVal):
-
-        if len([name for name in os.listdir(dirVal+folder) if os.path.isfile(os.path.join(dirVal+folder, name))]) >= 15:
-            max_i = 25
-        else:
-            max_i = 40
-
-        for image in os.listdir(dirVal + folder):
-
-            img = dirVal + folder + image
-            img = load_img(img)
-            x = img_to_array(img)
-            x = x.reshape((1,) + x.shape)
-            i = 0
-
-            for _ in datagen.flow(x, batch_size=1, save_to_dir=(dirVal + folder), save_prefix='gen',
-                                  save_format='jpg'):
-                i += 1
-                if i > max_i:
-                    break
-
-    for folder in os.listdir(dirTest):
-
-        if len([name for name in os.listdir(dirTest+folder) if os.path.isfile(os.path.join(dirTest+folder, name))]) >= 5:
-            max_i = 25
-        else:
-            max_i = 40
-
-        for image in os.listdir(dirTest + folder):
-
-            img = dirTest + folder + image
-            img = load_img(img)
-            x = img_to_array(img)
-            x = x.reshape((1,) + x.shape)
-            i = 0
-
-            for _ in datagen.flow(x, batch_size=1, save_to_dir=(dirTest + folder), save_prefix='gen',
-                                  save_format='jpg'):
-                i += 1
-                if i > max_i:
-                    break
-
-
-# Reads the image, normalizes it and scales it down to input it into cnn
-def image_transform(image):
-    print("transforming image")
-    img = io.imread(image)
-    img = preprocess_input(img)
-    img = img / 255.0
-    img = transform.resize(img, (img_size, img_size, 3), mode='constant')
-    return img
-
-
 # Function for predicting images from test folder (saves images with top 5 labels)
 def predict(data_test, labels):
     print("predicting")
@@ -211,53 +125,6 @@ def predict(data_test, labels):
 
         cv2.imwrite(img_name, img)
 
-
-# Loads the dataset into arrays
-def load_data():
-    print("loading data")
-    train_data = []
-    val_data = []
-    test_data = []
-    train_labels = []
-    val_labels = []
-    test_labels = []
-    labels = []
-    classes = 0
-
-    for folder in os.listdir(dirTrain):
-        img_path = dirTrain + "/" + folder
-        labels.append(os.path.basename(folder))
-        classes += 1
-
-        for image in os.listdir(img_path):
-            img = image_transform(img_path + "/" + image)
-            train_labels.append(classes - 1)
-            train_data.append(img)
-    
-    classes = 0
-    for folder in os.listdir(dirVal):
-        img_path = dirTrain + "/" + folder
-        labels.append(os.path.basename(folder))
-        classes += 1
-
-        for image in os.listdir(img_path):
-            img = image_transform(img_path + "/" + image)
-            val_labels.append(classes - 1)
-            val_data.append(img) 
-
-    index = 0
-    for folder in os.listdir(dirTest):
-        img_path = dirTest + "/" + folder
-        index += 1
-
-        for image in os.listdir(img_path):
-            img = image_transform(img_path + "/" + image)
-            test_labels.append(index - 1)
-            test_data.append(img)
-    
-    np.savez('transformed_data.npz',train_d=np.array(train_data),val_d=np.array(val_data), test_d=np.array(test_data), train_l=np.array(train_labels), val_l=np.array(val_labels), test_l=np.array(test_labels))
-
-
 def print_cmx(y_true,y_pred):
     labels=sorted(list(set(y_true)))
     cmx_data=confusion_matrix(y_true,y_pred,labels=labels)
@@ -282,26 +149,26 @@ if __name__ == "__main__":
     args = vars(ap.parse_args())
 
     prediction = "predictions"
-    dirTrain = "/home/virtual_net/dataset/train/train"
-    dirVal = "/home/virtual_net/dataset/train/val"
-    dirTest="/home/virtual_net/dataset/test"
-    transformed="/home/virtual_net/vv19/npzfile"		
-    # create_dataset(dirTrain, dirVal, dirTest)
-    npzfile=np.load("transformed_data.npz")
+    dirTrain = "/home/virtual_net/dataset2/train/train"
+    dirVal = "/home/virtual_net/dataset2/train/val"
+    dirTest="/home/virtual_net/dataset2/test"
+    transformed="/home/virtual_net/vv19/npzfile2"		
+    
+    npzfile=np.load("transformed_data2.npz")
     data_train=npzfile['train_d']
     data_val=npzfile['val_d']
     data_test=npzfile['test_d']
     labels_train=npzfile['train_l']
     labels_val=npzfile['val_l']
     labels_test=npzfile['test_l']
-    num_classes=101
-
+    num_classes=5
+    
     labels=[]
-    with open("label.csv","r") as f:
+    with open("label2.csv","r") as f:
         reader=csv.reader(f)
         header=next(reader)
-        for row in reader:
-            labels.append(row)
+    for row in reader:
+        labels.append(row)
 
     encoder = LabelBinarizer()
     transformed_labels_train = encoder.fit_transform(labels_train)
@@ -374,6 +241,7 @@ if __name__ == "__main__":
         print("[INFO] top5 accuracy: {: .2f}%".format(eval_top5_acc * 100))
 
     if args['load']:
+
         # Load model
         json_file = open(args['load'] + ".json", 'r')
         model_json = json_file.read()
@@ -381,12 +249,13 @@ if __name__ == "__main__":
         model = model_from_json(model_json)
         model.load_weights(args['load'] + ".h5")
         print("[INFO] model wczytany")
-	
+
     file_path = 'labels.txt'
     file = open(file_path, 'w')
+
     for label in labels:
-        print(label)
-        file.write(str(label) + '\n')
+        file.write(label + '\n')
     file.close()
 
     predict(data_test, labels)
+
