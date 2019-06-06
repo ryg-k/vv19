@@ -59,8 +59,11 @@ def main(x0,age,sex,phys_act_level):
     return dinner_name[close_judge(x0,Xp,ikinokori,sex,age,phys_act_level)]
 
 foodlist_df = pd.read_csv('foodlist_to_nutrient2.csv',index_col=0)
-x0 = foodlist_df.loc['pad_thai']*2 #sample data
-print(main(x0,age=8,sex='male',phys_act_level = 2))
+x0 = foodlist_df.loc['pad_thai']*2
+x1 = foodlist_df.loc['apple_pie']
+x0 = x0 + x1 #sample data
+output = main(x0,age=8,sex='male',phys_act_level = 2)
+print(output)
 #ageにはage groupのインデックスを入れる（何番目のグループか）
 #sex は　'male' か 'female'のどちらか
 #phys_act_level　は 1,2,3　のどれか
