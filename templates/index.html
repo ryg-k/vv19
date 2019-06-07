@@ -1,46 +1,144 @@
 {% extends "layout.html" %}
 {% block content %}
-{% if graph_url != "" %}
+<div class="child1" align="center">
 <div>
-  <img src={{ graph_url }} alt="Image" width="500" height="400">
-</div>
-{% endif %}
-<div>
-<br />
-Hello {{ name }}
-
-<br />
-
 
 <form method="POST" action="/confirm" enctype="multipart/form-data">
-  画像選択<input type="file" id="img_data1" name="img_data1">
+
+<h1>基本情報</h1>
+
+  <p>性別を教えてください
+  <select name="sex">
+    <option value="1">男性</option>
+    <option value="2">女性</option>
+  </select>
+  </p>
+  <p>年齢を教えてください
+  <select name="age">
+    <option value="1">10-11歳</option>
+    <option value="2">12-14歳</option>
+    <option value="3">15-17歳</option>
+    <option value="4">18-29歳</option>
+    <option value="5">30-49歳</option>
+    <option value="6">50-70歳</option>
+  </select>
+  </p>
+  <p>身体活動レベルを教えてください
+  <select name="phys_act">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+  </select>
+  </p>
+
+  <h1>画像選択</h1>
+    <input type="file" id="img_data1" name="img_data1">
   <br />
   <input class="btn-square" type="submit" value="送信">
-  <p>嫌いな食べ物
-  <select name="hate">
-    <option value="1">ピーマン</option>
-    <option value="2">パクチー</option>
-    <option value="3">わさび</option>
-  </select>
-</p>
+
 </form>
 
+<br />
+
+<br />
+<p>You ate</p>
+
 {% if images %}
-  {% for path in images %}
-    <img src="static/img_make/{{ path }}" alt="Image">
-    {{ path }}
+  {% for i in range(n) %}
+  <p class="kage">
+    <span>
+    <img src="static/img_make/{{ images[i] }}" alt="Image" width="300" height="300" >
+  </span>
+</p>
+    {{ imagesname[i] }}
     {% for igli in iglis %}
-      {% if path == igli[0] %}
-        <table border="1">
-          <tr>
-            {% for ig in igli %}
-            <td>{{ ig }}</td>
-            {% endfor %}
-          </tr>
-        </table>
+      {% if images[i] == igli[0] %}
+       <p>[{{ igli[6] }}] の確率で</p>
+            <table >
+            <tr >
+              <th>料理名</th>
+              <th>{{labels[0]}}</th>
+              <th>{{labels[1]}}</th>
+              <th>{{labels[2]}}</th>
+              <th>{{labels[3]}}</th>
+            </tr>
+            <tr>
+              <td>{{igli[1]}}</td>
+              <td>{{igli[2][1]}}</td>
+              <td>{{igli[3][1]}}</td>
+              <td>{{igli[4][1]}}</td>
+              <td>{{igli[5][1]}}</td>
+            </tr>
+          </table>
       {% endif %}
     {% endfor %}
   {% endfor %}
 {% endif %}
+</div>
+</div>
+<div class="child2" align="center">
+
+  <h1>推奨する料理</h1>
+  {% if reccook != "" %}
+  <ul>
+  <li> {{ reccook }}</li>
+  </ul>
+  <a href={{ http_reccook }}><img src="static/search.jpg" alt="株式会社" height=50></a>
+  {% endif %}
+
+<h1>あなたの一日の目安量</h1>
+<table>
+<tr>
+  <th>{{labels[0]}}</th>
+  <th>{{labels[1]}}</th>
+  <th>{{labels[2]}}</th>
+  <th>{{labels[3]}}</th>
+</tr>
+<tr>
+  <td>{{val_ideal[0]}}</td>
+  <td>{{val_ideal[1]}}</td>
+  <td>{{val_ideal[2]}}</td>
+  <td>{{val_ideal[3]}}</td>
+</tr>
+</table>
+<br />
+<h1>過去3回の履歴</h1>
+
+  <table>
+  <tr>
+    <th>料理名</th>
+    <th>{{labels[0]}}</th>
+    <th>{{labels[1]}}</th>
+    <th>{{labels[2]}}</th>
+    <th>{{labels[3]}}</th>
+  </tr>
+  {% for ans in ansre3 %}
+  <tr>
+    <td>{{ans[0]}}</td>
+    <td>{{ans[1]}}</td>
+    <td>{{ans[2]}}</td>
+    <td>{{ans[3]}}</td>
+    <td>{{ans[4]}}</td>
+    {% endfor %}
+  </tr>
+  <tr>
+    <td>合計</td>
+    <td>{{anssum[0] }}</td>
+    <td>{{anssum[1] }}</td>
+    <td>{{anssum[2] }}</td>
+    <td>{{anssum[3] }}</td>
+  </tr>
+</table>
+
+<br />
+
+<p>達成割合</p>
+  {% if graph_url != "" %}
+  <div>
+    <img src="static/graph/bar.png" alt="Image"height="400">
+  </div>
+  {% endif %}
+
+
 </div>
 {% endblock %}
