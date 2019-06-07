@@ -173,7 +173,7 @@ def pfc_judge(x0,Xp,sex,age,phys_act_level):
     ikinokori = np.where(Y0 * Y1 * Y2)[0] #array indicating where pfc ratio is in the designated range
     return ikinokori
 
-def close_judge(x0,Xp,ikinokori,sex,age,phys_level):
+def close_judge(x0,Xp,sex,age,phys_level):
     list_nutrient = np.array(['エネルギー(kcal)','タンパク質(g)',
     'n-6系 多価不飽和(g)','n-3系 多価不飽和(g)',
     '食物繊維 総量(g)','ビタミンA(μg)','ビタミンD(μg)','ビタミンE(mg)','ビタミンK(μg)',
@@ -210,7 +210,9 @@ def main1(x0,age,sex,phys_act_level):
     dinner_name = dinner_df['foodname']
     Xp = dinner_df.iloc[:,1:] #dinner dataframe without names of food
     ikinokori = pfc_judge(x0,Xp,sex,age,phys_act_level)
-    rec_food = close_judge(x0,Xp,ikinokori,sex,age,phys_act_level)
+    if ikinokori.shape[0] != 0:
+        Xp = Xp.loc[ikinokori]
+    rec_food = close_judge(x0,Xp,sex,age,phys_act_level)
     total_nutrient = Xp.loc[rec_food] + x0
     return dinner_name[rec_food],total_nutrient
 
