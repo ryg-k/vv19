@@ -209,10 +209,10 @@ def main1(x0,age,sex,phys_act_level):
     dinner_df = pd.read_pickle('dinner1.pickle')
     dinner_name = dinner_df['foodname']
     Xp = dinner_df.iloc[:,1:] #dinner dataframe without names of food
-    #producing sample data (will be left out)
-    a = np.random.randint(700000)
     ikinokori = pfc_judge(x0,Xp,sex,age,phys_act_level)
-    return dinner_name[close_judge(x0,Xp,ikinokori,sex,age,phys_act_level)]
+    rec_food = close_judge(x0,Xp,ikinokori,sex,age,phys_act_level)
+    total_nutrient = Xp.loc[rec_food] + x0
+    return dinner_name[rec_food],total_nutrient
 
 
 iglists=[]
@@ -337,7 +337,8 @@ def save_img():
         #文字列
         global reccook
         global http_reccook
-        reccook=main1(sumnunu,age,sex,phys_level)
+        reccook,total_nutrient=main1(sumnunu,age,sex,phys_level)
+        #total_nutrient に加算された全ての栄養素の量のpandas.Seriesオブジェクトを入れました。
         http_reccook=("https://www.google.com/search?q="+ reccook).replace(" ","")
         print(http_reccook)
 
