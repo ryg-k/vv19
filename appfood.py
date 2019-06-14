@@ -104,14 +104,14 @@ def plot_polar(labels, values, imgname):
     fig.savefig(imgname)
     plt.close(fig)
 
-def plot_bar(labels, values, imgname):
+def plot_bar(labels, values, values2, imgname):
     height1 = values  # 点数1  # 点数2
     left = np.arange(len(height1))  # numpyで横軸を設定
     width = 0.3
-    plt.bar(left, height1, color='skyblue', width=width, align='center')
-    #plt.bar(left+width, height2, color='b', width=width, align='center')
-    #plt.xticks(left + width/2, labels)
-    plt.xticks(left , labels)
+    plt.bar(left, height1, color='skyblue', width=width,label="現状", align='center')
+    plt.bar(left+width, values2, color='r', width=width,label="調整後", align='center')
+    plt.xticks(left + width/2, labels)
+    #plt.xticks(left , labels)
     plt.xlabel("栄養")
     plt.ylabel("割合(%)")
     plt.savefig(imgname)
@@ -173,7 +173,7 @@ def pfc_judge(x0,Xp,sex,age,phys_act_level):
     ikinokori = np.where(Y0 * Y1 * Y2)[0] #array indicating where pfc ratio is in the designated range
     return ikinokori
 
-def close_judge(x0,Xp,sex,age,phys_level):
+def close_judge(x0,Xp,ikinokori,sex,age,phys_level):
     list_nutrient = np.array(['エネルギー(kcal)','タンパク質(g)',
     'n-6系 多価不飽和(g)','n-3系 多価不飽和(g)',
     '食物繊維 総量(g)','ビタミンA(μg)','ビタミンD(μg)','ビタミンE(mg)','ビタミンK(μg)',
@@ -201,6 +201,8 @@ def close_judge(x0,Xp,sex,age,phys_level):
     argmin = np.square(lack).sum(axis=1).idxmin()
     return argmin
 
+
+
 def main1(x0,age,sex,phys_act_level):
     #load nutient data of syushoku
     #age: index
@@ -210,12 +212,9 @@ def main1(x0,age,sex,phys_act_level):
     dinner_name = dinner_df['foodname']
     Xp = dinner_df.iloc[:,1:] #dinner dataframe without names of food
     ikinokori = pfc_judge(x0,Xp,sex,age,phys_act_level)
-    if ikinokori.shape[0] != 0:
-        Xp = Xp.loc[ikinokori]
-    rec_food = close_judge(x0,Xp,sex,age,phys_act_level)
+    rec_food = close_judge(x0,Xp,ikinokori,sex,age,phys_act_level)
     total_nutrient = Xp.loc[rec_food] + x0
     return dinner_name[rec_food],total_nutrient
-
 
 iglists=[]
 
@@ -340,9 +339,16 @@ def save_img():
         global reccook
         global http_reccook
         reccook,total_nutrient=main1(sumnunu,age,sex,phys_level)
-        #total_nutrient に加算された全ての栄養素の量のpandas.Seriesオブジェクトを入れました。
+        #total_nutrientは推奨したものも食べた後の栄養
         http_reccook=("https://www.google.com/search?q="+ reccook).replace(" ","")
         print(http_reccook)
+        print("pppppppppppp")
+        print(total_nutrient)
+        print(total_nutrient[0])
+        print(total_nutrient[1])
+        print(total_nutrient[6])
+        print(total_nutrient[2]/9)
+        prednut=[total_nutrient[0],total_nutrient[1],total_nutrient[6],total_nutrient[2]/9]
 
         nus = [head[28],head[36],head[64],head[69]]
         #エネルギー(kcal),タンパク質(g),炭水化物(g),脂質(g)
@@ -353,12 +359,12 @@ def save_img():
 
         v0=100*(listpd1[head[28]].values[0])/energy[0]
         v1=100*(listpd1[head[36]].values[0])/n[0]
-        v2=100*(listpd1[head[64]].values[0])/(energy[0]*0.575/4)
-        v3=100*(listpd1[head[69]].values[0])/(energy[0]*0.25/9)
+        v2=100*(listpd1[head[64]].values[0])/(energy[0]*0.5/4)
+        v3=100*(listpd1[head[69]].values[0])/(energy[0]*0.2/9)
         val0=[v0,v1,v2,v3]
         global val_ideal
-        val_ideal=[energy[0],n[0],(energy[0]*0.575/4),(energy[0]*0.25/9)]
-        plot_bar(nus, val0, os.path.join('static', 'graph',"bar.png"))
+        val_ideal=[int(energy[0]),int(n[0]),int(energy[0]*0.575/4),int(energy[0]*0.25/9)]
+        #plot_bar(nus, val0, os.path.join('static', 'graph',"bar.png"))
         #ここで栄養を計算してリストでもっておく
         #head[28]=エネルギー(kcal)
         #head[50]=ビタミンC(mg)
@@ -382,13 +388,36 @@ def save_img():
         ansre3.append([ans[0],listpd1[head[28]].values[0],listpd1[head[36]].values[0],listpd1[head[64]].values[0],listpd1[head[69]].values[0]])
         if len(ansre3) > 3:
             ansre3.pop(0)
+
         global anssum
         anssum=[0,0,0,0]
         for an in ansre3:
+            if an[1] != an[1]:
+                print("Yes")
+                an[1]=0
+                an[2]=0
+                an[3]=0
+                an[4]=0
             anssum[0]+=an[1]
             anssum[1]+=an[2]
             anssum[2]+=an[3]
             anssum[3]+=an[4]
+        rate=[]
+        print("kkkkkkkkkkkkkkkkkk")
+        print(ansre3)
+        print(anssum)
+        print(val_ideal)
+        for i in range(len(anssum)):
+            rate.append(int(100*anssum[i]/val_ideal[i]))
+        print(rate)
+        print("kkkkkkkkkkkkkkkkkk2")
+        print(prednut)
+        prednurate=[]
+        for i in range(len(prednut)):
+            prednurate.append(int(100*prednut[i]/val_ideal[i]))
+        print(prednurate)
+
+        plot_bar(nus, rate, prednurate, os.path.join('static', 'graph',"bar.png"))
         iglists.append([fmt_name,ans[0],
         [labels[0],values1[0]],[labels[1],values1[1]],[labels[2],values1[2]],[labels[3],values1[3]],predrate])
         #plot_polar(labels, values1, os.path.join('static', 'graph',"radar.png"))
